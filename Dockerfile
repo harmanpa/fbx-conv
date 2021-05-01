@@ -17,7 +17,7 @@ RUN wget -O fbx20190_fbxsdk_linux.tar.gz http://download.autodesk.com/us/fbx/201
       && yes yes | ./fbx20190_fbxsdk_linux fbx-sdk-linux
 
 COPY . /home
-RUN ./generate_makefile \
+RUN premake5 --file=premake.lua gmake \
        && cd build/gmake/ \
        && make config=release
 
