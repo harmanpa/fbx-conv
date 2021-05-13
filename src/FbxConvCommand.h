@@ -46,6 +46,7 @@ struct FbxConvCommand {
 		settings->maxIndexCount = (1<<15)-1;
 		settings->outType = FILETYPE_AUTO;
 		settings->inType = FILETYPE_AUTO;
+                settings->allowDuplicateNodeIds = false;
 
 		for (int i = 1; i < argc; i++) {
 			const char *arg = argv[i];
@@ -57,6 +58,8 @@ struct FbxConvCommand {
 					settings->flipV = true;
 				else if (arg[1] == 'v')
 					settings->verbose = true;
+                                else if (arg[1] == 'u')
+					settings->allowDuplicateNodeIds = true;
 				else if (arg[1] == 'p')
 					settings->packColors = true;
 				else if ((arg[1] == 'i') && (i + 1 < argc))
@@ -109,6 +112,7 @@ struct FbxConvCommand {
 		printf("-b <size>: The maximum amount of bones a nodepart can contain (default: 12)\n");
 		printf("-w <size>: The maximum amount of bone weights per vertex (default: 4)\n");
 		printf("-v       : Verbose: print additional progress information\n");
+                printf("-u       : Allow duplicate node IDs\n");
 		printf("\n");
 		printf("<input>  : The filename of the file to convert.\n");
 		printf("<output> : The filename of the converted file.\n");

@@ -131,8 +131,8 @@ class FbxConv {
 			if (!result)
 				log->error(log::eSourceLoadGeneral);
 			else {
-				result = reader->convert(model);
 				log->status(log::sSourceConvert);
+                                result = reader->convert(model);
 			}
 
 			log->status(log::sSourceClose);

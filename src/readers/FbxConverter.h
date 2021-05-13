@@ -136,14 +136,26 @@ namespace readers {
 				FbxAxisSystem axis(defaultUpAxis, defaultFrontAxis, defaultCoordSystem);
 				axis.ConvertScene(scene);
 			}
-			if (scene)
+			if (scene) {
+                                log->status("Checking Nodes");
 				checkNodes();
-			if (scene)
+                                log->status("Checked Nodes");
+                        }
+			if (scene) {
+                                log->status("Prefetching Meshes");
 				prefetchMeshes();
-			if (scene)
+                                log->status("Prefetched Meshes");
+                        }
+			if (scene) {
+                                log->status("Fetching Materials");
 				fetchMaterials();
-			if (scene)
+                                log->status("Fetched Materials");
+                        }
+			if (scene) {
+                                log->status("Fetching Texture Bounds");
 				fetchTextureBounds();
+                                log->status("Fetched Texture Bounds");
+                        }
 			return !(scene == 0);
 		}
 
@@ -210,7 +222,7 @@ namespace readers {
 				return;
 			}
 
-			if (model->getNode(node->GetName())) {
+			if (!(settings->allowDuplicateNodeIds) && model->getNode(node->GetName())) {
 				log->warning(log::wSourceConvertFbxDuplicateNodeId, node->GetName());
 				return;
 			}
@@ -523,8 +535,9 @@ namespace readers {
 			int cnt = scene->GetMaterialCount();
 			for (int i = 0; i < cnt; i++) {
 				FbxSurfaceMaterial * const &material = scene->GetMaterial(i);
-				if (materialsMap.find(material->GetName()) == materialsMap.end())
+				if (materialsMap.find(material->GetName()) == materialsMap.end()) {
 					materialsMap[material->GetName()] = createMaterial(material);
+                                }
 			}
 		}
 
@@ -548,19 +561,21 @@ namespace readers {
 			return result;
 		}
 
-		Material *createMaterial(FbxSurfaceMaterial * const &material) {	
+		Material *createMaterial(FbxSurfaceMaterial * const &material) {
+                        log->status("Creating material");	
 			Material * const result = new Material();
 			result->source = material;
 			result->id = material->GetName();
 
-			if ((!material->Is<FbxSurfaceLambert>()) || GetImplementation(material, FBXSDK_IMPLEMENTATION_HLSL) || GetImplementation(material, FBXSDK_IMPLEMENTATION_CGFX)) {
+			if ((!material->Is<FbxSurfaceLambert>())) {// || GetImplementation(material, FBXSDK_IMPLEMENTATION_HLSL) || GetImplementation(material, FBXSDK_IMPLEMENTATION_CGFX)) {
 				if (!material->Is<FbxSurfaceLambert>())
 					log->warning(log::wSourceConvertFbxMaterialUnsupported, result->id.c_str());
-				if (GetImplementation(material, FBXSDK_IMPLEMENTATION_HLSL))
-					log->warning(log::wSourceConvertFbxMaterialHLSL, result->id.c_str());
-				if (GetImplementation(material, FBXSDK_IMPLEMENTATION_CGFX))
-					log->warning(log::wSourceConvertFbxMaterialCgFX, result->id.c_str());
-				result->diffuse.set(1.f, 0.f, 0.f);
+				//if (GetImplementation(material, FBXSDK_IMPLEMENTATION_HLSL))
+				//	log->warning(log::wSourceConvertFbxMaterialHLSL, result->id.c_str());
+				//if (GetImplementation(material, FBXSDK_IMPLEMENTATION_CGFX))
+				//	log->warning(log::wSourceConvertFbxMaterialCgFX, result->id.c_str());
+				//result->diffuse.set(1.f, 0.f, 0.f);
+                                log->status("Created material");
 				return result;
 			}
 
@@ -593,8 +608,10 @@ namespace readers {
 				result->opacity.set((color[0] + color[1] + color[2]) / 3.0);
 			}
 
-			if (!material->Is<FbxSurfacePhong>())
+			if (!material->Is<FbxSurfacePhong>()) {
+                                log->status("Created material");
 				return result;
+                        }
 
 			FbxSurfacePhong * const &phong = (FbxSurfacePhong *)material;
 
@@ -605,6 +622,7 @@ namespace readers {
 
 			addTextures(result->id.c_str(), result->textures, phong->Specular, Material::Texture::Specular);
 			addTextures(result->id.c_str(), result->textures, phong->Reflection, Material::Texture::Reflection);
+                        log->status("Created material");
 			return result;
 		}
 
